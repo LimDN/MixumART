@@ -130,6 +130,22 @@ container system start
 
 Then pass `--runtime apple` to `mixum env create`. If more than one runtime is ready, the CLI requires an explicit `--runtime`.
 
+### Install the CLI
+
+**Homebrew (macOS, recommended):**
+
+```bash
+brew install EmergeShift/tap/mixum
+```
+
+This builds `mixum` and `mixum-artd` from source. Rust is installed automatically as a build dependency.
+
+**From source (all platforms):**
+
+```bash
+cargo install --path crates/mixum-cli --bin mixum --bin mixum-artd
+```
+
 ### 1. Build the CLI and check the host
 
 ```bash

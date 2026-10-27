@@ -1,0 +1,61 @@
+name: Update Homebrew Formula
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g., v0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ inputs.tag }}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=${TAG#v}" >> $GITHUB_OUTPUT
+
+      - name: Compute SHA256
+        id: sha256
+        run: |
+          URL="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.tag.outputs.tag }}.tar.gz"
+          echo "Downloading from $URL"
+          SHA=$(curl -sL "$URL" | shasum -a 256 | awk '{print $1}')
+          echo "sha256=$SHA" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA"
+
+      - name: Update formula
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          VERSION="${{ steps.tag.outputs.version }}"
+          SHA="${{ steps.sha256.outputs.sha256 }}"
+          
+          sed -i "s|^  url .*|  url \"https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz\"|" Formula/mixum.rb
+          sed -i "s|^  sha256 .*|  sha256 \"${SHA}\"|" Formula/mixum.rb
+          
+          echo "Updated formula:"
+          cat Formula/mixum.rb
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/mixum.rb
+          git commit -m "chore(homebrew): update mixum to ${{ steps.tag.outputs.tag }}" || echo "No changes to commit"
+          git push
