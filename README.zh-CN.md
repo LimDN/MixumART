@@ -129,6 +129,22 @@ container system start
 
 然后给 `mixum env create` 传 `--runtime apple`。如果同时有多个运行时可用，CLI 会要求显式指定 `--runtime`。
 
+### 安装 CLI
+
+**Homebrew（macOS，推荐）：**
+
+```bash
+brew install EmergeShift/tap/mixum
+```
+
+从源码构建 `mixum` 和 `mixum-artd`。Rust 会作为构建依赖自动安装。
+
+**从源码构建（全平台）：**
+
+```bash
+cargo install --path crates/mixum-cli --bin mixum --bin mixum-artd
+```
+
 ### 1. 构建 CLI，检查宿主
 
 ```bash
